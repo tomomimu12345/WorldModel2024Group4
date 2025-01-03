@@ -2,9 +2,20 @@ import argparse
 import pathlib
 import glob
 import re
+import pickle
 
 import h5py
 import numpy as np
+import json
+
+# 統計情報を保存する辞書
+statistics = {
+    "bounds": [[0.1, 0.9], [0.1, 0.9], [0.1, 0.9]],  # 必要なら更新
+    "sequence_length": 10,
+    "default_connectivity_radius": 0.025,  # 必要なら更新
+    "dim": 3
+}
+output_json_path = "statistics.json"
 
 #  python3 convert_hdf5_to_npz.py --path sim_results/sand/ sim_results/sand2/ --output sample
 
@@ -31,9 +42,9 @@ if __name__ == "__main__":
         running_sumsq = dict(velocity_x=0, velocity_y=0, acceleration_x=0, acceleration_y=0)
         running_count = dict(velocity_x=0, velocity_y=0, acceleration_x=0, acceleration_y=0)
     elif ndim == 3:
-        running_sum = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = np.zeros(9))
-        running_sumsq = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = np.zeros(9))
-        running_count = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = 0)
+        running_sum = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = np.zeros(9), C_diff = np.zeros(9))
+        running_sumsq = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = np.zeros(9), C_diff = np.zeros(9))
+        running_count = dict(velocity_x=0, velocity_y=0, velocity_z=0, acceleration_x=0, acceleration_y=0, acceleration_z=0, f_tensor_diff = 0, C_diff = 0)
     else:
         raise NotImplementedError        
 
@@ -88,6 +99,10 @@ if __name__ == "__main__":
         f_tensor_diff[1:] = (f_tensor[1:] - f_tensor[:-1])
         f_tensor_diff[0] = 0
 
+        C_diff = np.empty_like(C)
+        C_diff[1:] = (C[1:] - C[:-1])
+        C_diff[0] = 0
+
         # compute accelerations finite difference
         # assume accelerations before zero are equal to zero
         accelerations = np.empty_like(velocities)
@@ -110,10 +125,12 @@ if __name__ == "__main__":
                 data = accelerations[:,:,2]
             elif key == "f_tensor_diff":
                 data = f_tensor_diff # [steps, particle, 9]
+            elif key == "C_diff":
+                data = C_diff # [steps, particle, 9]
             else:
                 raise KeyError
 
-            if key == "f_tensor_diff":
+            if key == "f_tensor_diff" or key == "C_diff":
                 # 要素ごとに合計
                 running_sum[key] += np.sum(data, axis=(0,1))  # [9]
                 running_sumsq[key] += np.sum(data**2, axis=(0,1))  # [9]
@@ -131,6 +148,7 @@ if __name__ == "__main__":
             "C": C,
             "f_tensor": f_tensor
         }
+        # trajectories[str(directory)] = (positions, np.full(positions.shape[1], 6, dtype=int))
 
     # compute online mean and standard deviation.
     print("Statistis across all trajectories:")
@@ -145,6 +163,44 @@ if __name__ == "__main__":
         else:
             # スカラーの場合
             print(f"  {key}: mean={mean:.4E}, std={std:.4E}")
+    # まとめた配列用の変数を初期化
+    vel_mean = [0] * ndim
+    vel_std = [0] * ndim
+    acc_mean = [0] * ndim
+    acc_std = [0] * ndim
+
+    # 各統計量を辞書に追加
+    for key in running_sum:
+        mean = running_sum[key] / running_count[key]
+        std = np.sqrt((running_sumsq[key] - running_sum[key]**2 / running_count[key]) / (running_count[key] - 1))
+        
+        if "velocity" in key:
+            axis = ["x", "y", "z"].index(key.split("_")[-1])
+            vel_mean[axis] = mean
+            vel_std[axis] = std
+        elif "acceleration" in key:
+            axis = ["x", "y", "z"].index(key.split("_")[-1])
+            acc_mean[axis] = mean
+            acc_std[axis] = std
+        else:
+            if isinstance(mean, np.ndarray):
+                statistics[f"{key}_mean"] = mean.tolist()
+                statistics[f"{key}_std"] = std.tolist()
+            else:
+                statistics[f"{key}_mean"] = mean
+                statistics[f"{key}_std"] = std
+
+    # まとめた配列を統計情報に追加
+    statistics["vel_mean"] = vel_mean
+    statistics["vel_std"] = vel_std
+    statistics["acc_mean"] = acc_mean
+    statistics["acc_std"] = acc_std
+
+    # 結果をJSONファイルに保存
+    with open(output_json_path, "w") as json_file:
+        json.dump(statistics, json_file, indent=4)
+
+    print(f"Statistics written to: {output_json_path}")
 
     # for key in trajectories:
     #     for i,array in enumerate(trajectories[key]):
