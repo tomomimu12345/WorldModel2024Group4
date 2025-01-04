@@ -49,3 +49,4 @@ python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name
 ## Acknowledgements
 - [Graph Network Simulator](https://github.com/geoelements/gns)
 - [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
+- [Kolmogorov-Arnold Network](https://github.com/Blealtan/efficient-kan)
