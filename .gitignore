@@ -3,3 +3,4 @@ sim_results/
 data/
 paraview/
 models/
+__pycache__/

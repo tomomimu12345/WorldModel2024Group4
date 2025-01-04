@@ -2,7 +2,34 @@ from typing import List
 import torch
 import torch.nn as nn
 from torch_geometric.nn import MessagePassing
+from efficient_kan import KAN
 
+def build_kan(
+        input_size: int,
+        hidden_layer_sizes: List[int],
+        output_size: int = None,
+        **kwargs) -> KAN:
+    """
+    Build a MultiLayer Perceptron using KAN layers.
+
+    Args:
+        input_size: Size of input layer.
+        hidden_layer_sizes: A list of sizes for hidden layers.
+        output_size: Size of the output layer.
+        **kwargs: Additional arguments for the KAN class.
+
+    Returns:
+        kan: A KAN model.
+    """
+    layer_sizes = [input_size] + hidden_layer_sizes
+    if output_size:
+        layer_sizes.append(output_size)
+
+    # Use KAN with the specified layer sizes and activation
+    return KAN(
+        layers_hidden=layer_sizes,
+        **kwargs
+    )
 
 def build_mlp(
         input_size: int,
@@ -60,7 +87,8 @@ class Encoder(nn.Module):
           nedge_in_features: int,
           nedge_out_features: int,
           nmlp_layers: int,
-          mlp_hidden_dim: int):
+          mlp_hidden_dim: int,
+          use_kan: bool):
     """The Encoder implements nodes features :math: `\varepsilon_v` and edge
     features :math: `\varepsilon_e` as multilayer perceptrons (MLP) into the
     latent vectors, :math: `v_i` and :math: `e_{i,j}`, of size 128.
@@ -79,17 +107,18 @@ class Encoder(nn.Module):
         size 128).
       nmlp_layer: Number of hidden layers in the MLP (typically of size 2).
       mlp_hidden_dim: Size of the hidden layer (latent dimension of size 128).
+      use_kan: true -> KAN, false -> MLP
 
     """
     super(Encoder, self).__init__()
     # Encode node features as an MLP
-    self.node_fn = nn.Sequential(*[build_mlp(nnode_in_features,
+    self.node_fn = nn.Sequential(*[(build_kan if use_kan else build_mlp)(nnode_in_features,
                                              [mlp_hidden_dim
                                               for _ in range(nmlp_layers)],
                                              nnode_out_features),
                                    nn.LayerNorm(nnode_out_features)])
     # Encode edge features as an MLP
-    self.edge_fn = nn.Sequential(*[build_mlp(nedge_in_features,
+    self.edge_fn = nn.Sequential(*[(build_kan if use_kan else build_mlp)(nedge_in_features,
                                              [mlp_hidden_dim
                                               for _ in range(nmlp_layers)],
                                              nedge_out_features),
@@ -120,6 +149,7 @@ class InteractionNetwork(MessagePassing):
       nedge_out: int,
       nmlp_layers: int,
       mlp_hidden_dim: int,
+      use_kan: bool
   ):
     """InteractionNetwork derived from torch_geometric MessagePassing class
 
@@ -130,18 +160,19 @@ class InteractionNetwork(MessagePassing):
       nedge_out: Number of edge output features (latent dimension of size 128).
       nmlp_layer: Number of hidden layers in the MLP (typically of size 2).
       mlp_hidden_dim: Size of the hidden layer (latent dimension of size 128).
+      use_kan: true -> KAN, false -> MLP
 
     """
     # Aggregate features from neighbors
     super(InteractionNetwork, self).__init__(aggr='add')
     # Node MLP
-    self.node_fn = nn.Sequential(*[build_mlp(nnode_in + nedge_out,
+    self.node_fn = nn.Sequential(*[(build_kan if use_kan else build_mlp)(nnode_in + nedge_out,
                                              [mlp_hidden_dim
                                               for _ in range(nmlp_layers)],
                                              nnode_out),
                                    nn.LayerNorm(nnode_out)])
     # Edge MLP
-    self.edge_fn = nn.Sequential(*[build_mlp(nnode_in + nnode_in + nedge_in,
+    self.edge_fn = nn.Sequential(*[(build_kan if use_kan else build_mlp)(nnode_in + nnode_in + nedge_in,
                                              [mlp_hidden_dim
                                               for _ in range(nmlp_layers)],
                                              nedge_out),
@@ -253,6 +284,7 @@ class Processor(MessagePassing):
       nmessage_passing_steps: int,
       nmlp_layers: int,
       mlp_hidden_dim: int,
+      use_kan: bool
   ):
     """Processor derived from torch_geometric MessagePassing class. The 
     processor uses a stack of :math: `M GNs` (where :math: `M` is a 
@@ -270,6 +302,7 @@ class Processor(MessagePassing):
       nmessage_passing_steps: Number of message passing steps.
       nmlp_layer: Number of hidden layers in the MLP (typically of size 2).
       mlp_hidden_dim: Size of the hidden layer (latent dimension of size 128).
+      use_kan: true -> KAN, false -> MLP
 
     """
     super(Processor, self).__init__(aggr='max')
@@ -282,6 +315,7 @@ class Processor(MessagePassing):
             nedge_out=nedge_out,
             nmlp_layers=nmlp_layers,
             mlp_hidden_dim=mlp_hidden_dim,
+            use_kan= use_kan
         ) for _ in range(nmessage_passing_steps)])
 
   def forward(self,
@@ -316,7 +350,8 @@ class Decoder(nn.Module):
           nnode_in: int,
           nnode_out: int,
           nmlp_layers: int,
-          mlp_hidden_dim: int):
+          mlp_hidden_dim: int,
+          use_kan: bool):
     """The Decoder coder's learned function, :math: `\detla v`, is an MLP. 
     After the Decoder, the future position and velocity are updated using an 
     Euler integrator, so the :math: `yi` corresponds to accelerations, 
@@ -327,9 +362,10 @@ class Decoder(nn.Module):
       nnode_out: Number of node outputs (particle dimension).
       nmlp_layer: Number of hidden layers in the MLP (typically of size 2).
       mlp_hidden_dim: Size of the hidden layer (latent dimension of size 128).
+      use_kan: true -> KAN, false -> MLP
     """
     super(Decoder, self).__init__()
-    self.node_fn = build_mlp(
+    self.node_fn = (build_kan if use_kan else build_mlp)(
         nnode_in, [mlp_hidden_dim for _ in range(nmlp_layers)], nnode_out)
 
   def forward(self,
@@ -354,6 +390,7 @@ class EncodeProcessDecode(nn.Module):
       nmessage_passing_steps: int,
       nmlp_layers: int,
       mlp_hidden_dim: int,
+      use_kan: bool
   ):
     """Encode-Process-Decode function approximator for learnable simulator.
 
@@ -369,6 +406,7 @@ class EncodeProcessDecode(nn.Module):
       latent_dim: Size of latent dimension (128)
       nmlp_layer: Number of hidden layers in the MLP (typically of size 2).
       mlp_hidden_dim: Size of the hidden layer (latent dimension of size 128).
+      use_kan: true -> KAN, false -> MLP
 
     """
     super(EncodeProcessDecode, self).__init__()
@@ -379,6 +417,7 @@ class EncodeProcessDecode(nn.Module):
         nedge_out_features=latent_dim,
         nmlp_layers=nmlp_layers,
         mlp_hidden_dim=mlp_hidden_dim,
+        use_kan = use_kan
     )
     self._processor = Processor(
         nnode_in=latent_dim,
@@ -388,12 +427,14 @@ class EncodeProcessDecode(nn.Module):
         nmessage_passing_steps=nmessage_passing_steps,
         nmlp_layers=nmlp_layers,
         mlp_hidden_dim=mlp_hidden_dim,
+        use_kan = use_kan
     )
     self._decoder = Decoder(
         nnode_in=latent_dim,
         nnode_out=nnode_out_features,
         nmlp_layers=nmlp_layers,
         mlp_hidden_dim=mlp_hidden_dim,
+        use_kan = use_kan
     )
 
   def forward(self,

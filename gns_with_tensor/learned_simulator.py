@@ -18,6 +18,7 @@ class LearnedSimulator(nn.Module):
           nmessage_passing_steps: int,
           nmlp_layers: int,
           mlp_hidden_dim: int,
+          use_kan: bool,
           connectivity_radius: float,
           boundaries: np.ndarray,
           normalization_stats: dict,
@@ -68,7 +69,8 @@ class LearnedSimulator(nn.Module):
         latent_dim=latent_dim,
         nmessage_passing_steps=nmessage_passing_steps,
         nmlp_layers=nmlp_layers,
-        mlp_hidden_dim=mlp_hidden_dim)
+        mlp_hidden_dim=mlp_hidden_dim,
+        use_kan = use_kan)
 
     self._device = device
 

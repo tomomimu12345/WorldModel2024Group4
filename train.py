@@ -19,6 +19,7 @@ from absl import flags
 from absl import app
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append('./efficient-kan/src')
 
 from gns_with_tensor import learned_simulator
 from gns_with_tensor import noise_utils
@@ -79,6 +80,8 @@ use_material_properties_list = np.array([False]*15)
 
 use_f_tensor = True
 use_C_tensor = True
+
+use_KAN = True
 
 def rollout(
         simulator: learned_simulator.LearnedSimulator,
@@ -799,6 +802,7 @@ def _get_simulator( # modify metadata
       nmessage_passing_steps=10,
       nmlp_layers=2,
       mlp_hidden_dim=128,
+      use_kan = use_KAN,
       connectivity_radius=metadata['default_connectivity_radius'],
       boundaries=np.array(metadata['bounds']),
       normalization_stats=normalization_stats,
