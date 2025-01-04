@@ -9,6 +9,9 @@ import numpy as np
 import os
 from pyevtk.hl import pointsToVTK
 
+# pip install pyevtk
+# python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name rollout_ex0 --step_stride 1
+
 flags.DEFINE_string("rollout_dir", None, help="Directory where rollout.pkl are located")
 flags.DEFINE_string("rollout_name", None, help="Name of rollout `.pkl` file")
 flags.DEFINE_integer("step_stride", 3, help="Stride of steps to skip.")

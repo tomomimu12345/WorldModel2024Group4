@@ -13,6 +13,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 # pip install absl-py
+# pip install torch_geometric
 # pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.4.0+cu124.html
 from absl import flags
 from absl import app
@@ -25,7 +26,13 @@ from gns_with_tensor import reading_utils
 from gns_with_tensor import data_loader
 from gns_with_tensor import distribute
 
-# python3 train.py --mode train --data_path sample/
+# train
+# python3 train.py --mode train --data_path sample/ --validation_interval 500
+
+# python3 train.py --mode train --batch_size 2 --data_path data/ --validation_interval 1000 --ntraining_steps 1e6 --nsave_steps 5000 
+
+# test
+# python3 train.py --mode rollout --data_path sample/ --model_file model-5000.pt
 
 flags.DEFINE_enum(
     'mode', 'train', ['train', 'valid', 'rollout'],
@@ -68,7 +75,7 @@ loss_weight = {
 }
 
 use_material_properties_list = np.array([False]*15)
-# use_material_properties_list[10] = True
+# use_material_properties_list[8] = True
 
 use_f_tensor = True
 use_C_tensor = True
@@ -183,7 +190,7 @@ def rollout(
 
   loss = (predictions - ground_truth_positions) ** 2
 
-  shape = (loss.shape[0], loss.shape[1], loss.shape[2] * loss_shape[2])
+  shape = (loss.shape[0], loss.shape[1], loss.shape[2] * loss.shape[2])
   loss_f = torch.zeros(shape)
   loss_C = torch.zeros(shape)
 
@@ -250,7 +257,7 @@ def predict(device: str):
   ds = data_loader.get_data_loader_by_trajectories(path=f"{FLAGS.data_path}{split}.npz", use_material_properties_list = use_material_properties_list, use_f_tensor = use_f_tensor, use_C_tensor=use_C_tensor)
 
   # See if our dataset has material property, C, f_tensor as feature
-  material_property_as_feature = True if "material_properties" in ds.dataset._data[0] else False
+  material_property_as_feature = np.any(use_material_properties_list)
   C_as_feature = True if "C" in ds.dataset._data[0] else False
   f_tensor_as_feature = True if "f_tensor" in ds.dataset._data[0] else False
 
@@ -272,6 +279,7 @@ def predict(device: str):
       particle_type = features["particle_types"].to(device)
       n_particles_per_example = torch.tensor([int(features["n_particles_per_example"])], dtype=torch.int32).to(device)
 
+      material_property = None
       if material_property_as_feature:
         material_property = features["material_properties"].to(device)
       
@@ -382,6 +390,9 @@ def save_model_and_train_state(rank, device, simulator, flags, step, epoch, opti
                           C_diff_loss_history={"train": train_loss_hist["C_diff"], "valid": valid_loss_hist["C_diff"]}
                           )
       torch.save(train_state, f'{flags["model_path"]}train_state-{step}.pt')
+  if len(train_loss_hist["total"])>0 and len(valid_loss_hist["total"])>0:
+    save_loss_history_plots(train_loss_hist, valid_loss_hist, flags)
+
 
 def save_loss_history_plots(train_loss_hist, valid_loss_hist, flags):
     """
@@ -684,7 +695,7 @@ def train(rank, flags, world_size, device):
       if flags["validation_interval"] is not None:
         sampled_valid_example = next(iter(dl_valid))
         tot_epoch_valid_loss, components= validation(
-                simulator, sampled_valid_example, n_features, flags, rank, device_id)
+                simulator, sampled_valid_example, flags, rank, device_id)
         if device == torch.device("cuda"):
           torch.distributed.reduce(tot_epoch_valid_loss, dst=0, op=torch.distributed.ReduceOp.SUM)
           tot_epoch_valid_loss /= world_size
@@ -699,7 +710,7 @@ def train(rank, flags, world_size, device):
       if rank == 0 or device == torch.device("cpu"):
         print(f'Epoch {epoch}, training loss: {epoch_train_loss["total"].item()}')
         if flags["validation_interval"] is not None:
-          print(f'Epoch {epoch}, validation loss: {epoch_valid_loss["total"].item()}')
+          print(f'Epoch {epoch}, validation loss: {epoch_valid_loss["total"]}')
       
       # Reset epoch training loss
       epoch_train_loss = {"total": 0, "acc": 0, "f_tensor_diff": 0, "C_diff": 0}

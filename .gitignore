@@ -1,2 +1,5 @@
 sample/
 sim_results/
+data/
+paraview/
+models/

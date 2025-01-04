@@ -292,7 +292,7 @@ class LearnedSimulator(nn.Module):
       start_id += dim * dim
     
     if C_sequence is not None:
-      C_stats = self,_normalization_stats["C_diff"]
+      C_stats = self._normalization_stats["C_diff"]
       C_diff = (
         normalized_acceleration[:, start_id : start_id + dim * dim] * C_stats["std"]
       ) + C_stats["mean"]
@@ -456,7 +456,7 @@ class LearnedSimulator(nn.Module):
     #   as `next_position_adjusted - noisy_position_sequence[:,-1]`
     #   matches the ground truth next velocity (noise cancels out).
 
-    return predicted_normalized, target_normalized
+    return predicted, target_normalized
 
   # modify
   def _inverse_decoder_postprocessor(
@@ -516,7 +516,7 @@ class LearnedSimulator(nn.Module):
       normalized_f_tensor_diff = (
           f_tensor_diff - f_tensor_stats["mean"]
       ) / f_tensor_stats['std']
-      outputs["f_tensor_diff"] = normalization_stats
+      outputs["f_tensor_diff"] = normalized_f_tensor_diff
     
     if C_sequence is not None:
       previous_C = C_sequence[:, -1]

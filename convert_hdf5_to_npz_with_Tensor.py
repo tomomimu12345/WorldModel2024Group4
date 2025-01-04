@@ -8,24 +8,29 @@ import h5py
 import numpy as np
 import json
 
-# 統計情報を保存する辞書
 statistics = {
-    "bounds": [[0.1, 0.9], [0.1, 0.9], [0.1, 0.9]],  # 必要なら更新
-    "sequence_length": 10,
-    "default_connectivity_radius": 0.025,  # 必要なら更新
+    "bounds": [[0.1, 0.9], [0.1, 0.9], [0.1, 0.9]],
+    "sequence_length": 350,
+    "default_connectivity_radius": 0.01,  # 必要なら変更
     "dim": 3
 }
-output_json_path = "statistics.json"
 
-#  python3 convert_hdf5_to_npz.py --path sim_results/sand/ sim_results/sand2/ --output sample
+#  python3 convert_hdf5_to_npz_with_Tensor.py --path sim_results/sand/ sim_results/sand2/ --output sample
+
+# python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat train_paths.txt) --output train
+# python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat valid_paths.txt) --output valid
+# python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat test_paths.txt) --output test
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert hdf5 trajectories to npz.')
     parser.add_argument('--path', nargs="+", help="Path(s) to hdf5 files to consume.")
     parser.add_argument('--ndim', default=3, help="Dimension of input data, default is 2 (i.e., 2D).")
-    parser.add_argument('--dt', default=2E-4, help="Time step between position states.")
+    # parser.add_argument('--dt', default=2E-4, help="Time step between position states.")
     parser.add_argument('--output', help="Name of the output file.")
     args = parser.parse_args()
+
+    output_json_path = args.output+ ".json"
 
     directories = [pathlib.Path(path) for path in args.path]
 
@@ -131,12 +136,10 @@ if __name__ == "__main__":
                 raise KeyError
 
             if key == "f_tensor_diff" or key == "C_diff":
-                # 要素ごとに合計
                 running_sum[key] += np.sum(data, axis=(0,1))  # [9]
                 running_sumsq[key] += np.sum(data**2, axis=(0,1))  # [9]
                 running_count[key] += data.shape[0] * data.shape[1] # steps * particles
             else:
-                # スカラー値の合計
                 running_sum[key] += np.sum(data)
                 running_sumsq[key] += np.sum(data**2)
                 running_count[key] += np.size(data)
@@ -156,13 +159,12 @@ if __name__ == "__main__":
         mean = running_sum[key] / running_count[key]
         std = np.sqrt((running_sumsq[key] - running_sum[key]**2/running_count[key]) / (running_count[key] - 1))
         if isinstance(mean, np.ndarray):
-            # 配列の場合
             mean_str = np.array2string(mean, formatter={'float_kind': lambda x: f"{x:.4E}"})
             std_str = np.array2string(std, formatter={'float_kind': lambda x: f"{x:.4E}"})
             print(f"  {key}: mean={mean_str}, std={std_str}")
         else:
-            # スカラーの場合
             print(f"  {key}: mean={mean:.4E}, std={std:.4E}")
+    
     # まとめた配列用の変数を初期化
     vel_mean = [0] * ndim
     vel_std = [0] * ndim
