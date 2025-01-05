@@ -21,12 +21,14 @@ flags.DEFINE_enum("output_mode", "gif", ["gif", "vtk"], help="Type of render out
 FLAGS = flags.FLAGS
 
 TYPE_TO_COLOR = {
-    1: "red",  # for droplet
-    3: "black",  # Boundary particles.
-    0: "green",  # Rigid solids.
-    7: "magenta",  # Goop.
-    6: "gold",  # Sand.
-    5: "blue",  # Water.
+    0: "red", # jelly
+    1: "gray",  # metal
+    2: "gold",  # sand
+    3: "green",  # foam.
+    4: "magenta",  # snow.
+    5: "gold",  # particine.
+    6: "blue",  # fluid.
+    7: "black" # boundary particles
 }
 
 
