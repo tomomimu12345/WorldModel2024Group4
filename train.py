@@ -262,8 +262,8 @@ def predict(device: str):
 
   # See if our dataset has material property, C, f_tensor as feature
   material_property_as_feature = np.any(use_material_properties_list)
-  C_as_feature = True if "C" in ds.dataset._data[0] else False
-  f_tensor_as_feature = True if "f_tensor" in ds.dataset._data[0] else False
+  C_as_feature = use_C_tensor
+  f_tensor_as_feature = use_f_tensor
 
   eval_loss   = []
   eval_loss_f = []

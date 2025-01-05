@@ -4,3 +4,6 @@ data/
 paraview/
 models/
 __pycache__/
+model/
+.o/
+PhysGaussian/
