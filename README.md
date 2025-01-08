@@ -15,7 +15,7 @@ pip install -r requirements.txt
 - Install optional dependencies of pytorch_geometric for cuda and pytorch versions([pytorch_geometric](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html))
 
 ```
-pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.4.0+cu124.html
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.0+cu121.html
 ```
 
 ## Generate mpm train data
