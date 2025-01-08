@@ -1,4 +1,7 @@
 # WorldModel2024Group4
+![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
+
+
 
 ## Environment
 ```
