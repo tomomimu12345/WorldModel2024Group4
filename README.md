@@ -1,4 +1,8 @@
 # WorldModel2024Group4
+This code is designed to train a Graph Neural Simulator based on Material Point Method simulations. 
+
+Modifications are made to the traditional GNS to simultaneously predict the acceleration and the velocity of the deformation gradient.
+
 ![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
 
 
