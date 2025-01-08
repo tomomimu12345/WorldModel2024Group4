@@ -1,8 +1,8 @@
-numpy
-matplotlib
-warp-lang
-h5py
-torch
-pyevtk
-absl-py
-torch_geometric
+numpy==1.26.4
+matplotlib==3.9.0
+warp-lang==1.5.1
+h5py==3.12.1
+torch==2.5.1+cu121
+torch-geometric==2.6.1
+pyevtk==1.6.0
+absl-py==2.1.0

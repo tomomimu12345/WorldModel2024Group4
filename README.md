@@ -1,5 +1,11 @@
 # WorldModel2024Group4
 
+## Environment
+```
+Python 3.10.12
+CUDA 12.2
+```
+
 ## Installation
 
 ```
@@ -32,6 +38,7 @@ mv train.json data/metadata.json
 ```
 
 ### Train
+Requires at least 18 GB of VRAM for Training
 ```
 python3 train.py --mode train --batch_size 2 --data_path data/ --validation_interval 1000 --ntraining_steps 1000000 --nsave_steps 5000 
 ```
