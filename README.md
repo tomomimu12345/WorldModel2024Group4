@@ -7,7 +7,9 @@ CUDA 12.2
 ```
 
 ## Installation
-
+```
+git clone --recursive https://github.com/tomomimu12345/WorldModel2024Group4.git
+```
 ```
 pip install -r requirements.txt
 ```
