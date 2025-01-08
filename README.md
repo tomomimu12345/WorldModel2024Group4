@@ -1,7 +1,22 @@
 # WorldModel2024Group4
+This code is designed to train a Graph Neural Simulator based on Material Point Method simulations. 
+
+Modifications are made to the traditional GNS to simultaneously predict the acceleration and the velocity of the deformation gradient.
+
+![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
+
+
+
+## Environment
+```
+Python 3.10.12
+CUDA 12.2
+```
 
 ## Installation
-
+```
+git clone --recursive https://github.com/tomomimu12345/WorldModel2024Group4.git
+```
 ```
 pip install -r requirements.txt
 ```
@@ -9,7 +24,7 @@ pip install -r requirements.txt
 - Install optional dependencies of pytorch_geometric for cuda and pytorch versions([pytorch_geometric](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html))
 
 ```
-pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.4.0+cu124.html
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.0+cu121.html
 ```
 
 ## Generate mpm train data
@@ -32,6 +47,7 @@ mv train.json data/metadata.json
 ```
 
 ### Train
+Requires at least 18 GB of VRAM for Training
 ```
 python3 train.py --mode train --batch_size 2 --data_path data/ --validation_interval 1000 --ntraining_steps 1000000 --nsave_steps 5000 
 ```
