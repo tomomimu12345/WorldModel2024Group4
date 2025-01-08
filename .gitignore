@@ -1,0 +1,9 @@
+sample/
+sim_results/
+data/
+paraview/
+models/
+__pycache__/
+model/
+.o/
+PhysGaussian/

@@ -1,0 +1,6 @@
+[submodule "efficient-kan"]
+    path = efficient-kan
+    url = https://github.com/Blealtan/efficient-kan.git
+[submodule "warp-mpm"]
+    path = warp-mpm
+    url = https://github.com/zeshunzong/warp-mpm.git

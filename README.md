@@ -1,1 +1,52 @@
 # WorldModel2024Group4
+
+## Installation
+
+```
+pip install -r requirements.txt
+```
+
+- Install optional dependencies of pytorch_geometric for cuda and pytorch versions([pytorch_geometric](https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html))
+
+```
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.4.0+cu124.html
+```
+
+## Generate mpm train data
+### Output in h5 file
+```
+python3 gen_data.py
+```
+Data is stored in sim_results/mpm-*.
+### Conversion to npz file
+```
+python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat train_paths.txt) --output train
+python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat valid_paths.txt) --output valid
+python3 convert_hdf5_to_npz_with_Tensor.py --path $(cat test_paths.txt) --output test
+```
+### Move npz and json file to data/
+```
+mkdir data/
+mv *.npz data/
+mv train.json data/metadata.json
+```
+
+### Train
+```
+python3 train.py --mode train --batch_size 2 --data_path data/ --validation_interval 1000 --ntraining_steps 1000000 --nsave_steps 5000 
+```
+
+### rollout simulation
+#### simulation
+```
+python3 train.py --mode rollout --data_path data/ --model_file model-1000000.pt
+```
+#### render simulation
+```
+python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name rollout_ex0 --step_stride 5
+```
+
+## Acknowledgements
+- [Graph Network Simulator](https://github.com/geoelements/gns)
+- [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
+- [Kolmogorov-Arnold Network](https://github.com/Blealtan/efficient-kan)
