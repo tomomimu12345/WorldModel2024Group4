@@ -62,12 +62,7 @@ python3 train.py --mode rollout --data_path data/ --model_file model-1000000.pt
 python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name rollout_ex0 --step_stride 5
 ```
 
-## Acknowledgements
-- [Graph Network Simulator](https://github.com/geoelements/gns)
-- [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
-- [Kolmogorov-Arnold Network](https://github.com/Blealtan/efficient-kan)
-
-## PhysGaussian 
+## PhysGaussian Demo
 ```
 cd PhysGaussian
 ```
@@ -95,3 +90,9 @@ python gs_simulation.py --model_path ./gs_model/model/collapse-trained/ --output
 ```
 python3 convert_hdf5_to_npz_with_Tensor.py --path gs_model/output_video/simulation_h5 --output gaussian
 ```
+
+## Acknowledgements
+- [Graph Network Simulator](https://github.com/geoelements/gns)
+- [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
+- [Kolmogorov-Arnold Network](https://github.com/Blealtan/efficient-kan)
+- [PhysGaussian](https://github.com/XPandora/PhysGaussian)
