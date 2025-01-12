@@ -84,9 +84,9 @@ I had an error installing simple_knn, so I made the following changes to "gaussi
 
 ### run MPM simulation
 ```
-python gs_simulation.py --model_path ./gs_model/model/collapse-trained/ --output_path ./gs_model/output_video --config ./gs_model/config/collapse_config.json --render_img --compile_video --white_bg --output_h5
+python gs_simulationMPM.py --model_path ./gs_model/model/collapse-trained/ --output_path ./gs_model/output_video --config ./gs_model/config/collapse_config.json --render_img --compile_video --white_bg --output_h5
 ```
-### gen Gaussian Splatting trajectry 
+### generate Gaussian Splatting trajectry 
 ```
 python3 convert_hdf5_to_npz_with_Tensor.py --path gs_model/output_video/simulation_h5 --output gaussian
 ```

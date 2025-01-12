@@ -11,6 +11,7 @@ import os
 import numpy as np
 import json
 from tqdm import tqdm
+import time
 
 # Gaussian splatting dependencies
 from utils.sh_utils import eval_sh
@@ -301,6 +302,8 @@ if __name__ == "__main__":
     shs_render = shs
     height = None
     width = None
+
+    start_time = time.perf_counter()
     for frame in tqdm(range(frame_num)):
         current_camera = get_camera_view(
             model_path,
@@ -323,13 +326,12 @@ if __name__ == "__main__":
 
         for step in range(step_per_frame):
             mpm_solver.p2g2p(frame, substep_dt, device=device)
-
-        if args.output_h5:
-            save_data_at_frame_h5(
-                mpm_solver,
-                directory_to_save,
-                frame + 1,
-            )
+            if args.output_h5:
+                save_data_at_frame_h5(
+                    mpm_solver,
+                    directory_to_save,
+                    step + frame * step_per_frame + 1,
+                )
 
         if args.render_img:
             pos = mpm_solver.export_particle_x_to_torch()[:gs_num].to(device)
@@ -375,6 +377,9 @@ if __name__ == "__main__":
                 os.path.join(args.output_path, f"{frame}.png".rjust(8, "0")),
                 255 * cv2_img,
             )
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time:.6f} seconds")
 
     if args.render_img and args.compile_video:
         fps = int(1.0 / time_params["frame_dt"] * 0.4)
