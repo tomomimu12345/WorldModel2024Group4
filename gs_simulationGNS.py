@@ -89,7 +89,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default=None)
     parser.add_argument("--output_filename", type=str, default="gs_model/rollout")
     parser.add_argument("--model_file", type = str, default=None)
-    parser.add_argument("--train_state_file", type= str, default=None)
 
     args = parser.parse_args()
 
@@ -97,6 +96,8 @@ if __name__ == "__main__":
         AssertionError("Model path does not exist!")
     if not os.path.exists(args.config):
         AssertionError("Scene config does not exist!")
+    if not os.path.exists(args.output_filename):
+        os.makedirs(args.output_filename, exist_ok=True)
     if args.output_path is not None and not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
 
@@ -274,7 +275,7 @@ if __name__ == "__main__":
 
     start_time = time.perf_counter()
 
-    x_list, cov_list, R_list = predict(args, device, mpm_init_cov)
+    x_list, cov_list, R_list = predict(args, device, mpm_init_cov.unsqueeze(0))
     for frame in tqdm(range(frame_num)):
         current_camera = get_camera_view(
             model_path,

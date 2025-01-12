@@ -2,8 +2,10 @@ sample/
 sim_results/
 data/
 paraview/
-models/
+nnode*/
 __pycache__/
+npz_data/
+simulation_h5/
 .o/
 gs_model/config/ficus_config.json
 gs_model/config/pillow2sofa_config.json
@@ -17,3 +19,4 @@ plt_loss.py
 *.png
 *.xlsx
 *.h5
+*.mp4

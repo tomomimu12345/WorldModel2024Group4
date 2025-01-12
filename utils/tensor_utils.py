@@ -65,10 +65,11 @@ def compute_transformed_covariance(F, covariance):
     # (time, nnode, 9) -> (time, nnode, 3, 3)
     F_matrices = F.view(F.shape[0], F.shape[1], 3, 3)
 
-    # F[t][n] @ covariance[n] @ F[t][n]^T
+    # F[t][n] @ covariance[n] @ F[t][n]^T = FCF^T(t, n, 3, 3)
     result = torch.einsum(
         "tnij,njk,tnlk->tnil", F_matrices, covariance, F_matrices
     )
+
     return result
 
 def compute_R_from_F_pytorch(F):
@@ -80,6 +81,13 @@ def compute_R_from_F_pytorch(F):
     """
     # (time, nnode, 9) -> (time, nnode, 3, 3)
     F_matrices = F.view(F.shape[0], F.shape[1], 3, 3)
+
+    # 元のデータ型を取得
+    original_dtype = F.dtype
+
+    # データ型が float16 の場合は一時的に float32 に変換
+    if original_dtype == torch.float16:
+        F_matrices = F_matrices.float()
 
     # SVD分解
     U, S, Vt = torch.linalg.svd(F_matrices)
@@ -94,8 +102,32 @@ def compute_R_from_F_pytorch(F):
 
     # 回転行列の計算
     R = torch.matmul(U, Vt)
-    
+
+    # float16 に戻す（必要な場合のみ）
+    if original_dtype == torch.float16:
+        R = R.half()
+
     # (time, nnode, 3, 3) -> (time, nnode, 9)
     R_flat = R.view(F.shape[0], F.shape[1], 9)
-    
+
     return R_flat
+
+def repeat_to_match_length(tensor, target_length):
+    """
+    繰り返してテンソルの第一次元を target_length に合わせる。
+
+    Args:
+        tensor (torch.Tensor): (time, nnode, feature) の形状のテンソル
+        target_length (int): 必要な長さ
+
+    Returns:
+        torch.Tensor: 第一次元が target_length に調整されたテンソル
+    """
+    current_length = tensor.shape[0]
+
+    if current_length >= target_length:
+        return tensor[:target_length]
+
+    repeat_factor = (target_length + current_length - 1) // current_length  # 繰り返し回数を計算
+    repeated_tensor = tensor.repeat((repeat_factor, 1, 1))  # テンソルを繰り返し
+    return repeated_tensor[:target_length]  # 必要な長さだけ切り取る

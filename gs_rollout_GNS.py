@@ -87,6 +87,20 @@ def rollout(
     f_tensor: deformation gradient
     C: velocity reconstruction
   """
+  covariance = covariance.half().to(device)
+
+  position = position.half().to(device)
+  particle_types = particle_types.to(device)  # 整数型は変換不要
+  n_particles_per_example = n_particles_per_example.to(device)  # 整数型は変換不要
+  if material_property is not None:
+      material_property = material_property.half().to(device)
+  if f_tensor is not None:
+      f_tensor = f_tensor.half().to(device)
+  if C is not None:
+      C = C.half().to(device)
+
+  # モデルも half() に変換
+  simulator = simulator.half()
 
   # position
   initial_positions = position[:, :INPUT_SEQUENCE_LENGTH] # (nparticles, seq - seq_length, dim)
@@ -115,18 +129,20 @@ def rollout(
 
   predictions = []
 
+
+  kinematic_mask = (particle_types == KINEMATIC_PARTICLE_ID).clone().detach().to(device)
+
   for step in tqdm(range(nsteps), total=nsteps):
     # Get next position with shape (nnodes, dim)
-    next_states = simulator.predict_positions(
-        current_positions,
-        nparticles_per_example = [n_particles_per_example],
-        particle_types = particle_types,
-        current_f_tensors = current_f_tensors,
-        current_C = current_C,
-        material_property = material_property
-    )
-    # Update kinematic particles from prescribed trajectory.
-    kinematic_mask = (particle_types == KINEMATIC_PARTICLE_ID).clone().detach().to(device)
+    with torch.cuda.amp.autocast():
+      next_states = simulator.predict_positions(
+          current_positions,
+          nparticles_per_example = [n_particles_per_example],
+          particle_types = particle_types,
+          current_f_tensors = current_f_tensors,
+          current_C = current_C,
+          material_property = material_property
+      )
 
     # position
     next_position = next_states["positions"]
@@ -166,6 +182,7 @@ def rollout(
         [current_C[:, 1:], next_C[:, None, :]], dim = 1)
       
 
+  del simulator
 
   # Predictions with shape (time, nnodes, dim)
   predictions = torch.stack(predictions)
@@ -179,21 +196,28 @@ def rollout(
 
   ### xの予測
   predictions_x = torch.cat([position.permute(1, 0, 2)[:INPUT_SEQUENCE_LENGTH], predictions], dim=0)
+  predictions_x = predictions_x.half()
   ###
 
   if f_tensor is not None:
     predictions_f_tensor = torch.stack(predictions_f_tensor)
+    predictions_f_tensor = predictions_f_tensor.half()
     ground_truth_f_tensors = ground_truth_f_tensors.permute(1, 0, 2)
 
     loss_f = (predictions_f_tensor - ground_truth_f_tensors) ** 2
 
+    # print(predictions_f_tensor)
     ###### cov, R
     ground_truth_covariance = covariance.clone().detach()
-    predictions_covariance = ground_truth_covariance[:INPUT_SEQUENCE_LENGTH]
+
+    predictions_covariance = repeat_to_match_length(
+        ground_truth_covariance, INPUT_SEQUENCE_LENGTH
+    ) 
+
 
     covariance33 = expand_covariance(covariance)[0] # (nnode, 3, 3)
 
-    predictions_covariance = torch.cat([predictions_covariance, 
+    predictions_covariance = torch.cat([predictions_covariance[:INPUT_SEQUENCE_LENGTH], 
                                  flatten_covariance(
                                    compute_transformed_covariance(predictions_f_tensor, covariance33)
                                    )],dim = 0) # (time, nnode, 6)
@@ -201,8 +225,11 @@ def rollout(
     ground_truth_R = compute_R_from_F_pytorch(f_tensor.permute(1,0,2))
     predictions_R = torch.cat([ground_truth_R[:INPUT_SEQUENCE_LENGTH], 
                                compute_R_from_F_pytorch(predictions_f_tensor)], dim = 0) # (time, nnode,9)
-    
-    loss_covariance = (ground_truth_covariance[INPUT_SEQUENCE_LENGTH:] - predictions_covariance[INPUT_SEQUENCE_LENGTH:])**2
+
+    if ground_truth_covariance.shape[0] > 1:
+      loss_covariance = (ground_truth_covariance[INPUT_SEQUENCE_LENGTH:] - predictions_covariance[INPUT_SEQUENCE_LENGTH:])**2
+    else:
+      loss_covariance = (ground_truth_covariance - predictions_covariance[INPUT_SEQUENCE_LENGTH:])**2
 
     loss_R = (ground_truth_R[INPUT_SEQUENCE_LENGTH:]- predictions_R[INPUT_SEQUENCE_LENGTH:])**2
     #######
@@ -210,6 +237,7 @@ def rollout(
   
   if C is not None:
     predictions_C = torch.stack(predictions_C)
+    predictions_C = predictions_C.half()
     ground_truth_C = ground_truth_C.permute(1, 0, 2)
 
     loss_C = (predictions_C - ground_truth_C) ** 2
@@ -231,6 +259,13 @@ def rollout(
     output_dict["initial_C"] = initial_C.permute(1, 0, 2).cpu().numpy()
     output_dict["predicted_rollout_C"] = predictions_C.cpu().numpy()
     output_dict["ground_truth_rollout_C"] = ground_truth_C.cpu().numpy()
+  
+  if predictions_x is not None and predictions_x.dtype == torch.float16:
+    predictions_x = predictions_x.float()
+  if predictions_covariance is not None and predictions_covariance.dtype == torch.float16:
+    predictions_covariance = predictions_covariance.float()
+  if predictions_R is not None and predictions_R.dtype == torch.float16:
+    predictions_R = predictions_R.float()
 
   return output_dict, loss, loss_f, loss_C, loss_covariance, loss_R, predictions_x ,predictions_covariance, predictions_R
 

@@ -1,5 +1,5 @@
 {
-    "opacity_threshold": 0.02,
+    "opacity_threshold": 0.9999,
     "rotation_degree": [0.0],
     "rotation_axis": [0],
     "substep_dt": 2.5e-3,
@@ -24,25 +24,6 @@
         0.1,
         0.9
     ],
-    "particle_filling": {
-        "n_grid": 100,
-        "density_threshold": 100,
-        "search_threshold": 1.0,
-        "search_exclude_direction": 2,
-        "ray_cast_direction": 4,
-        "max_particles_num": 100000,
-        "max_partciels_per_cell": 1,
-        "boundary": [
-            0.1,
-            0.9,
-            0.1,
-            0.9,
-            0.1,
-            0.9
-        ],
-        "smooth": true,
-        "visualize": true
-    },
     "boundary_conditions": [
         {
             "type": "surface_collider",
