@@ -1,0 +1,121 @@
+{
+    "opacity_threshold": 0.02,
+    "rotation_degree": [0.0],
+    "rotation_axis": [0],
+    "substep_dt": 2.5e-3,
+    "frame_dt": 0.01,
+    "frame_num": 100,
+    "E": 2000,
+    "nu": 0.3,
+    "n_grid": 32,
+    "material": "sand",
+    "density": 1800,
+    "g": [
+        0.0,
+        0,
+        -9.8
+    ],
+    "friction_angle": 35,
+    "sim_area": [
+        0.1,
+        0.9,
+        0.1,
+        0.9,
+        0.1,
+        0.9
+    ],
+    "particle_filling": {
+        "n_grid": 100,
+        "density_threshold": 100,
+        "search_threshold": 1.0,
+        "search_exclude_direction": 2,
+        "ray_cast_direction": 4,
+        "max_particles_num": 100000,
+        "max_partciels_per_cell": 1,
+        "boundary": [
+            0.1,
+            0.9,
+            0.1,
+            0.9,
+            0.1,
+            0.9
+        ],
+        "smooth": true,
+        "visualize": true
+    },
+    "boundary_conditions": [
+        {
+            "type": "surface_collider",
+            "point": [0,0,0.1],
+            "normal": [0,0,1],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        },
+        {
+            "type": "surface_collider",
+            "point": [0,0,0.9],
+            "normal": [0,0,-1],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        },
+        {
+            "type": "surface_collider",
+            "point": [0,0.1,0],
+            "normal": [0,1,0],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        },
+        {
+            "type": "surface_collider",
+            "point": [0,0.9,0],
+            "normal": [0,-1,0],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        },
+        {
+            "type": "surface_collider",
+            "point": [0.1,0,0],
+            "normal": [1,0,0],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        },
+        {
+            "type": "surface_collider",
+            "point": [0.9,0,0],
+            "normal": [-1,0,0],
+            "surface": "cut",
+            "friction": 0.0,
+            "start_time": 0.0,
+            "end_time": 1e10
+        }
+    ],
+    "mpm_space_vertical_upward_axis": [
+        0,
+        0,
+        1
+    ],
+    "mpm_space_viewpoint_center": [
+        0.5,
+        0.5,
+        0.5
+    ],
+    "default_camera_index": -1,
+    "show_hint": false,
+    "init_azimuthm": 135.0,
+    "init_elevation": 10.0,
+    "init_radius": 1.8,
+    "move_camera": false,
+    "delta_a": 0.5,
+    "delta_e": 0.0,
+    "delta_r": 0.0
+}

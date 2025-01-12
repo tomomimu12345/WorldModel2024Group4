@@ -6,4 +6,14 @@ models/
 __pycache__/
 model/
 .o/
-PhysGaussian/
+gs_model/config/ficus_config.json
+gs_model/config/pillow2sofa_config.json
+gs_model/config/vasedeck_config.json
+gs_model/config/wolf_config.json
+gs_model/model/ficus_whitebg-trained
+gs_model/model/pillow2sofa_whitebg-trained
+gs_model/model/vasedeck_whitebg-trained
+gs_model/model/wolf_whitebg-trained
+plt_loss.py
+*.png
+*.xlsx

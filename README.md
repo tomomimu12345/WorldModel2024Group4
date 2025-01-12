@@ -66,3 +66,28 @@ python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name
 - [Graph Network Simulator](https://github.com/geoelements/gns)
 - [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
 - [Kolmogorov-Arnold Network](https://github.com/Blealtan/efficient-kan)
+
+## PhysGaussian 
+```
+cd PhysGaussian
+```
+```
+pip install opencv_python opencv_python_headless Pillow plyfile PyMCubes scipy setuptools taichi==1.5.0
+```
+```
+pip install -e gaussian-splatting/submodules/diff-gaussian-rasterization/
+```
+```
+pip install -e gaussian-splatting/submodules/simple-knn/
+cd ..
+```
+I had an error installing simple_knn, so I made the following changes to "gaussian-splatting/submodules/simple_knn/simple_knn.cu"
+```
+// addition
+#include <float.h>
+```
+
+### run MPM simulation
+```
+python gs_simulation.py --model_path ./gs_model/model/collapse-trained/ --output_path output_video --config ./gs_model/config/collapse_config.json --render_img --compile_video --white_bg
+```

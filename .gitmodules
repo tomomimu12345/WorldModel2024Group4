@@ -4,3 +4,6 @@
 [submodule "warp-mpm"]
     path = warp-mpm
     url = https://github.com/zeshunzong/warp-mpm.git
+[submodule "PhysGaussian"]
+    path = PhysGaussian
+    url = https://github.com/XPandora/PhysGaussian.git
