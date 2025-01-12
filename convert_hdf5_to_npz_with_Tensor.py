@@ -100,6 +100,8 @@ if __name__ == "__main__":
         velocities[1:] = (positions[1:] - positions[:-1])
         velocities[0] = 0
 
+        statistics["sequence_length"] = velocities.shape[0]
+
         f_tensor_diff = np.empty_like(f_tensor)
         f_tensor_diff[1:] = (f_tensor[1:] - f_tensor[:-1])
         f_tensor_diff[0] = 0

@@ -65,6 +65,10 @@ class Render():
             )
         self.trajectory = trajectory
         self.loss = self.rollout_data['loss'].item()
+        self.loss_f = self.rollout_data['loss_f'].item()
+        self.loss_C = self.rollout_data['loss_C'].item()
+
+        print(self.loss, self.loss_f, self.loss_C)
 
         # Trajectory information
         self.dims = trajectory[rollout_cases[0][0]].shape[2]
@@ -159,12 +163,20 @@ class Render():
         # Fig creating function for 3d
         elif self.dims == 3:
             def animate(i):
+                azim = i * viewpoint_rotation
+                azim = 135 * viewpoint_rotation
                 print(f"Render step {i}/{self.num_steps} for {self.output_name}")
 
                 fig.clear()
                 for j, datacase in enumerate(trajectory_datacases):
                     # select ax to plot at set boundary
                     axes[j] = fig.add_subplot(1, 2, j + 1, projection='3d', autoscale_on=False)
+                    # axes[j].set_xticks([])
+                    # axes[j].set_yticks([])
+                    # axes[j].set_zticks([])
+                    axes[j].tick_params(axis='x', labelbottom=False)  # X軸
+                    axes[j].tick_params(axis='y', labelleft=False)   # Y軸
+                    axes[j].tick_params(axis='z', labelleft=False)   # Z軸
                     if change_yz == False:
                         axes[j].set_xlim([float(xboundary[0]), float(xboundary[1])])
                         axes[j].set_ylim([float(yboundary[0]), float(yboundary[1])])
@@ -178,7 +190,7 @@ class Render():
                             aspect=(float(xboundary[1]) - float(xboundary[0]),
                                     float(yboundary[1]) - float(yboundary[0]),
                                     float(zboundary[1]) - float(zboundary[0])))
-                        axes[j].view_init(elev=vertical_camera_angle, azim=i * viewpoint_rotation)
+                        axes[j].view_init(elev=vertical_camera_angle, azim=azim)
                         axes[j].grid(True, which='both')
                         axes[j].set_title(render_datacases[j])
                     else:
@@ -195,10 +207,10 @@ class Render():
                                     float(zboundary[1]) - float(zboundary[0]),
                                     float(yboundary[1]) - float(yboundary[0])))
                         # rotate viewpoints angle little by little for each timestep
-                        axes[j].view_init(elev=vertical_camera_angle, azim=i * viewpoint_rotation)
+                        axes[j].view_init(elev=vertical_camera_angle, azim=azim)
                         axes[j].grid(True, which='both')
                         axes[j].set_title(render_datacases[j])
-                fig.suptitle(f"{i}/{self.num_steps}, Total MSE: {self.loss:.2e}")
+                fig.suptitle(f"{i}/{self.num_steps}, Acc MSE: {self.loss:.2e} F MSE: {self.loss_f:.2e} C MSE:{self.loss_C:.2e}")
 
         # Creat animation
         ani = animation.FuncAnimation(
@@ -233,6 +245,7 @@ def main(_):
         raise ValueError("A `rollout_name`must be passed.")
 
     render = Render(input_dir=FLAGS.rollout_dir, input_name=FLAGS.rollout_name)
+    return
 
     if FLAGS.output_mode == "gif":
         render.render_gif_animation(

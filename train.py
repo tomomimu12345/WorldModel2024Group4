@@ -65,7 +65,7 @@ FLAGS = flags.FLAGS
 Stats = collections.namedtuple('Stats', ['mean', 'std'])
 
 INPUT_SEQUENCE_LENGTH = 6  # So we can calculate the last 5 velocities.
-INPUT_TENSOR_SEQUENCE_LENGTH = 2 # last 1 tensor difference f_tensor
+INPUT_TENSOR_SEQUENCE_LENGTH = 1 # last 1 tensor difference f_tensor
 NUM_PARTICLE_TYPES = 9
 KINEMATIC_PARTICLE_ID = 7
 
@@ -79,7 +79,7 @@ use_material_properties_list = np.array([False]*15)
 # use_material_properties_list[8] = True
 
 use_f_tensor = True
-use_C_tensor = True
+use_C_tensor = False
 
 use_KAN = False
 mlp_hidden_dim=128
