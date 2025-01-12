@@ -17,3 +17,4 @@ gs_model/model/wolf_whitebg-trained
 plt_loss.py
 *.png
 *.xlsx
+*.h5

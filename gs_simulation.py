@@ -38,6 +38,9 @@ from utils.transformation_utils import *
 from utils.camera_view_utils import *
 from utils.render_utils import *
 
+# Utils-add
+from utils.output_h5 import save_data_at_frame_h5
+
 wp.init()
 wp.config.verify_cuda = True
 
@@ -79,7 +82,6 @@ if __name__ == "__main__":
     parser.add_argument("--model_path", type=str, required=True)
     parser.add_argument("--output_path", type=str, default=None)
     parser.add_argument("--config", type=str, required=True)
-    parser.add_argument("--output_ply", action="store_true")
     parser.add_argument("--output_h5", action="store_true")
     parser.add_argument("--render_img", action="store_true")
     parser.add_argument("--compile_video", action="store_true")
@@ -280,17 +282,15 @@ if __name__ == "__main__":
     )
 
     # run the simulation
-    if args.output_ply or args.output_h5:
-        directory_to_save = os.path.join(args.output_path, "simulation_ply")
+    if args.output_h5:
+        directory_to_save = os.path.join(args.output_path, "simulation_h5")
         if not os.path.exists(directory_to_save):
             os.makedirs(directory_to_save)
 
-        save_data_at_frame(
+        save_data_at_frame_h5(
             mpm_solver,
             directory_to_save,
-            0,
-            save_to_ply=args.output_ply,
-            save_to_h5=args.output_h5,
+            0
         )
 
     substep_dt = time_params["substep_dt"]
@@ -324,13 +324,11 @@ if __name__ == "__main__":
         for step in range(step_per_frame):
             mpm_solver.p2g2p(frame, substep_dt, device=device)
 
-        if args.output_ply or args.output_h5:
-            save_data_at_frame(
+        if args.output_h5:
+            save_data_at_frame_h5(
                 mpm_solver,
                 directory_to_save,
                 frame + 1,
-                save_to_ply=args.output_ply,
-                save_to_h5=args.output_h5,
             )
 
         if args.render_img:
