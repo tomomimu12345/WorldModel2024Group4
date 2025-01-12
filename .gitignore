@@ -4,7 +4,6 @@ data/
 paraview/
 models/
 __pycache__/
-model/
 .o/
 gs_model/config/ficus_config.json
 gs_model/config/pillow2sofa_config.json

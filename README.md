@@ -18,6 +18,9 @@ CUDA 12.2
 git clone --recursive https://github.com/tomomimu12345/WorldModel2024Group4.git
 ```
 ```
+cd WorldModel2024Group4/
+```
+```
 pip install -r requirements.txt
 ```
 
@@ -67,7 +70,7 @@ python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name
 cd PhysGaussian
 ```
 ```
-pip install opencv_python opencv_python_headless Pillow plyfile PyMCubes scipy setuptools taichi==1.5.0
+pip install opencv_python opencv_python_headless Pillow plyfile PyMCubes==0.1.6 scipy setuptools taichi==1.5.0
 ```
 ```
 pip install -e gaussian-splatting/submodules/diff-gaussian-rasterization/
