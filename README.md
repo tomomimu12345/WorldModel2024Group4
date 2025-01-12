@@ -112,6 +112,13 @@ python3 gs_simulationGNS.py --model_path ./gs_model/model/collapse-trained/ --ou
 ```
 ## Simulation Result: MPM vs GNS
 
+### MPM
+https://github.com/user-attachments/assets/1dd10bd6-520b-427e-a430-3d5a51ed5f03
+### GNS
+https://github.com/user-attachments/assets/00b79b21-0fda-4b16-8599-7d7282f7b945
+
+
+
 ## Acknowledgements
 - [Graph Network Simulator](https://github.com/geoelements/gns)
 - [Material Point Method Simulator](https://github.com/zeshunzong/warp-mpm)
