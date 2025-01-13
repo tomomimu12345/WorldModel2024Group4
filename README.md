@@ -3,9 +3,13 @@ This code is designed to train a Graph Neural Simulator based on Material Point 
 
 Modifications are made to the traditional GNS to simultaneously predict the acceleration and the velocity of the deformation gradient.
 
+## Simulation Result: MPM vs GNS
+
+|MPM|GNS|
+|:-:|:-:|
+|<video src="https://github.com/user-attachments/assets/1dd10bd6-520b-427e-a430-3d5a51ed5f03">|<video src="https://github.com/user-attachments/assets/00b79b21-0fda-4b16-8599-7d7282f7b945">|
+
 ![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
-
-
 
 ## Environment
 ```
@@ -110,12 +114,6 @@ Simulate with Gaussian Splatting using **at least 40 GB of VRAM**
 ```
 python3 gs_simulationGNS.py --model_path ./gs_model/model/collapse-trained/ --output_path ./gs_model/output_video_GNS --config ./gs_model/config/collapse_config.json --render_img --compile_video --white_bg --output_h5 --data_path ./gs_model/npz_data/ --model_file models/model-1000000.pt
 ```
-## Simulation Result: MPM vs GNS
-
-### MPM
-https://github.com/user-attachments/assets/1dd10bd6-520b-427e-a430-3d5a51ed5f03
-### GNS
-https://github.com/user-attachments/assets/00b79b21-0fda-4b16-8599-7d7282f7b945
 
 
 
