@@ -1,3 +1,4 @@
+
 # WorldModel2024Group4
 This code is designed to train a Graph Neural Simulator based on Material Point Method simulations. 
 
@@ -5,11 +6,10 @@ Modifications are made to the traditional GNS to simultaneously predict the acce
 
 ## Simulation Result: MPM vs GNS
 
-|MPM|GNS|
-|:-:|:-:|
-|<video src="https://github.com/user-attachments/assets/1dd10bd6-520b-427e-a430-3d5a51ed5f03">|<video src="https://github.com/user-attachments/assets/00b79b21-0fda-4b16-8599-7d7282f7b945">|
-
-![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
+|Situation|MPM|GNS|
+|:-:|:-:|:-:|
+|3DGS+MPM|<video src="https://github.com/user-attachments/assets/1dd10bd6-520b-427e-a430-3d5a51ed5f03">|<video src="https://github.com/user-attachments/assets/00b79b21-0fda-4b16-8599-7d7282f7b945">|
+|MPM|<video src="https://github.com/user-attachments/assets/ad24d3f9-fae6-4e84-8fdf-c73b21a189b0">|<video src="https://github.com/user-attachments/assets/ef393b20-d9b9-439b-b97a-13302a42babd">|
 
 ## Environment
 ```
@@ -73,7 +73,7 @@ Render simulation results into images or videos:
 ```
 python3 gns_with_tensor/render_rollout.py --rollout_dir rollouts/ --rollout_name rollout_ex0 --step_stride 5
 ```
-
+![rollout_ex0](https://github.com/user-attachments/assets/2431bf53-ed86-47e2-bea6-ec0724bdb1fd)
 ## PhysGaussian Demo
 ### 1. Install Dependencies
 ```
